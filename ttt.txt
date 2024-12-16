@@ -1,0 +1,145 @@
+// Soyut sınıf Urun
+abstract class Urun {
+    protected String isim; // erişim belirleyici: protected
+    protected double fiyat;
+
+    // Yapılandırıcı
+    public Urun(String isim, double fiyat) {
+        this.isim = isim;
+        this.fiyat = fiyat;
+    }
+
+    // Soyut yöntem
+    public abstract void urunBilgisi();
+}
+
+// SatisYapilabilir Arayüzü
+interface SatisYapilabilir {
+    void satisYap(int adet);
+}
+
+// Exception Sınıfları
+class StokYetersizException extends RuntimeException {
+    public StokYetersizException(String mesaj) {
+        super(mesaj);
+    }
+}
+
+class GecersizUrunException extends RuntimeException {
+    public GecersizUrunException(String mesaj) {
+        super(mesaj);
+    }
+}
+
+// iPhone sınıfı
+class iPhone extends Urun implements SatisYapilabilir {
+    private int stok;
+
+    // Yapılandırıcı
+    public iPhone(String isim, double fiyat, int stok) {
+        super(isim, fiyat);
+        this.stok = stok;
+    }
+
+    // Overloading: satisYap yönteminin 3 farklı versiyonu
+    @Override
+    public void satisYap(int adet) {
+        if (stok >= adet) {
+            stok -= adet;
+            System.out.println(adet + " adet iPhone satıldı.");
+        } else {
+            throw new StokYetersizException("Yetersiz stok!");
+        }
+    }
+
+    public void satisYap(int adet, double indirim) {
+        double toplamFiyat = adet * fiyat * (1 - indirim);
+        System.out.println("Toplam Fiyat (indirimli): " + toplamFiyat);
+    }
+
+    public void satisYap(String kampanyaKodu, int adet) {
+        System.out.println("Kampanya " + kampanyaKodu + " uygulandı.");
+        satisYap(adet);
+    }
+
+    @Override
+    public void urunBilgisi() {
+        System.out.println("iPhone: " + isim + ", Fiyat: " + fiyat + ", Stok: " + stok);
+    }
+}
+
+// Aksesuar sınıfı
+class Aksesuar extends Urun {
+    public Aksesuar(String isim, double fiyat) {
+        super(isim, fiyat);
+    }
+
+    @Override
+    public void urunBilgisi() {
+        System.out.println("Aksesuar: " + isim + ", Fiyat: " + fiyat);
+    }
+}
+
+// Müşteri sınıfı ve iç içe (nested) Adres sınıfı
+class Musteri {
+    private String isim;
+    private Adres adres;
+
+    public Musteri(String isim, String sehir, String sokak) {
+        this.isim = isim;
+        this.adres = new Adres(sehir, sokak);
+    }
+
+    // Nested class
+    class Adres {
+        private String sehir;
+        private String sokak;
+
+        public Adres(String sehir, String sokak) {
+            this.sehir = sehir;
+            this.sokak = sokak;
+        }
+
+        public void adresBilgisi() {
+            System.out.println("Adres: " + sehir + ", " + sokak);
+        }
+    }
+
+    public void musteriBilgisi() {
+        System.out.println("Müşteri: " + isim);
+        adres.adresBilgisi();
+    }
+}
+
+// Ana sınıf
+public class iPhoneSatisSistemi {
+    public static void main(String[] args) {
+        // Ürünler
+        iPhone iphone13 = new iPhone("iPhone 13", 25000, 10);
+        Aksesuar kulaklik = new Aksesuar("AirPods", 5000);
+
+        // Müşteri
+        Musteri musteri1 = new Musteri("Ahmet", "Istanbul", "Kadikoy");
+
+        // Ürün Bilgileri
+        iphone13.urunBilgisi();
+        kulaklik.urunBilgisi();
+        musteri1.musteriBilgisi();
+
+        // Satış İşlemleri
+        try {
+            iphone13.satisYap(3);
+            iphone13.satisYap(2, 0.1); // %10 indirim
+            iphone13.satisYap("KAMPANYA2024", 5); // Kampanya uygulaması
+        } catch (StokYetersizException e) {
+            System.out.println("Hata: " + e.getMessage());
+        }
+
+        try {
+            kulaklik.urunBilgisi();
+            throw new GecersizUrunException("Bu ürün şu an satışta değil!");
+        } catch (GecersizUrunException e) {
+            System.out.println("Hata: " + e.getMessage());
+        }
+    }
+}
